@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
+import os from "os";
 
 export async function POST(request) {
   try {
@@ -12,7 +13,11 @@ export async function POST(request) {
       date: new Date().toISOString(),
     };
 
-    const filePath = path.join(process.cwd(), "logins.json");
+    // Use /tmp on Vercel (read-only filesystem), or project root locally
+    const isVercel = process.env.VERCEL === "1";
+    const filePath = isVercel
+      ? path.join(os.tmpdir(), "logins.json")
+      : path.join(process.cwd(), "logins.json");
 
     let logins = [];
     if (fs.existsSync(filePath)) {
