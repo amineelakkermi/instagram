@@ -12,8 +12,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Instagram - Se connecter",
-  description: "Se connecter à Instagram",
+  title: "Instagram - Fifibaridi",
+  description: "",
 };
 
 export default function RootLayout({ children }) {
